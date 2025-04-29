@@ -5,30 +5,36 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() async {
   // Mock SharedPreferences for testing
   SharedPreferences.setMockInitialValues({}); // Mock empty SharedPreferences
+  var currentId = 0;
 
   final apiService = ApiService();
   const String apiToken = "REPLACED"; // Replace with your actual token
 
   // Save API token to shared preferences (if needed)
   Future<void> saveApiToSharedPrefs() async {
-    print("Saving API token...");
+    print("Menyimpan API Token ...");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('token', apiToken);
-    print("API token saved.");
+    print("API Token disimpan\n\n");
   }
 
   // Fetch data
   Future<void> fetchDosenPraktisi() async {
-    print("Fetching Dosen Praktisi...");
+    print("Ambil data Dosen Praktisi ...");
     try {
       final data = await apiService.getData<DosenPraktisi>(
         DosenPraktisi.fromJson,
         "dosen-praktisi",
       );
-      print("Fetched ${data.length} records:");
+      print("Data Dosen Praktisi berhasil diambil:");
+      print("Jumlah data: ${data.length}");
+      print("Data Dosen Praktisi: ${data}");
+      int i = 1;
       for (var dosen in data) {
-        print("- ${dosen.namaDosen} (${dosen.perusahaan})");
+        print("ID ${i}: ${dosen})");
+        i++;
       }
+      print("Data Dosen Praktisi berhasil diambil\n\n");
     } catch (e) {
       print("Error fetching data: $e");
     }
@@ -51,12 +57,13 @@ void main() async {
     };
 
     try {
-      await apiService.postData<DosenPraktisi>(
+      var ret = await apiService.postData<DosenPraktisi>(
         DosenPraktisi.fromJson,
         body,
         "dosen-praktisi",
       );
-      print("Dosen Praktisi added successfully.");
+      currentId = ret.id;
+      print("Data berhasil ditambahkan dengan ID: ${ret.id}\n\n");
     } catch (e) {
       print("Error adding data: $e");
     }
@@ -85,7 +92,7 @@ void main() async {
         body,
         "dosen-praktisi",
       );
-      print("Dosen Praktisi updated successfully.");
+      print("Data berhasil diupdate.\n\n");
     } catch (e) {
       print("Error updating data: $e");
     }
@@ -99,19 +106,21 @@ void main() async {
         id,
         "dosen-praktisi",
       );
-      print("Dosen Praktisi deleted successfully.");
+      print("Data berhasil dihapus.\n\n");
     } catch (e) {
       print("Error deleting data: $e");
     }
   }
 
   // Run tests
-  await saveApiToSharedPrefs();
-  await fetchDosenPraktisi();
-  await addDosenPraktisi();
-  await fetchDosenPraktisi(); // Verify the new data is added
-  await updateDosenPraktisi(1); // Replace with a valid ID
-  await fetchDosenPraktisi(); // Verify the data is updated
-  await deleteDosenPraktisi(1); // Replace with a valid ID
-  await fetchDosenPraktisi(); // Verify the data is deleted
+  await saveApiToSharedPrefs(); // Simpan API token ke SharedPreferences
+  await fetchDosenPraktisi(); // Ambil data Dosen Praktisi
+  await addDosenPraktisi(); // Tambah data Dosen Praktisi dan simpan id
+  await fetchDosenPraktisi(); // Ambil data Dosen Praktisi lagi
+  await updateDosenPraktisi(
+      currentId); // Edit data Dosen Praktisi yang ditambahkan
+  await fetchDosenPraktisi(); // Ambil data Dosen Praktisi lagi
+  await deleteDosenPraktisi(
+      currentId); // Hapus data Dosen Praktisi yang ditambahkan
+  await fetchDosenPraktisi(); // Ambil data Dosen Praktisi lagi
 }
