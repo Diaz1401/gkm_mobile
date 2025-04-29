@@ -7,9 +7,10 @@ name: Dart
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "workflows" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "workflows" ]
+  workflow_dispatch:
 
 jobs:
   build:
