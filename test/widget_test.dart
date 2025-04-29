@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gkm_mobile/models/dosen_praktisi.dart';
 import 'package:gkm_mobile/services/api_services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TestApiPage extends StatefulWidget {
   const TestApiPage({Key? key}) : super(key: key);
@@ -12,7 +13,8 @@ class TestApiPage extends StatefulWidget {
 class _TestApiPageState extends State<TestApiPage> {
   List<DosenPraktisi> _dosenList = [];
   bool _isLoading = true;
-  int? _selectedId;
+  String apiToken = "REPLACED";
+  int _selectedId = 0;
 
   @override
   void initState() {
@@ -20,11 +22,16 @@ class _TestApiPageState extends State<TestApiPage> {
     _fetchDosenPraktisi();
   }
 
+  Future<void> saveApiToSharedPrefs() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('token', apiToken);
+  }
+
   Future<void> _fetchDosenPraktisi() async {
     try {
       final data = await ApiService().getData<DosenPraktisi>(
         DosenPraktisi.fromJson,
-        customEndpoint: "dosen-praktisi",
+        "dosen-praktisi",
       );
       setState(() {
         _dosenList = data;
@@ -36,7 +43,7 @@ class _TestApiPageState extends State<TestApiPage> {
     }
   }
 
-  void _addDosenPraktisi() {
+  Future<void> _addDosenPraktisi() async {
     final namaController = TextEditingController();
     final nidkController = TextEditingController();
     final perusahaanController = TextEditingController();
@@ -50,14 +57,22 @@ class _TestApiPageState extends State<TestApiPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(controller: namaController, decoration: const InputDecoration(labelText: 'Nama Dosen')),
-                TextField(controller: nidkController, decoration: const InputDecoration(labelText: 'NIDK')),
-                TextField(controller: perusahaanController, decoration: const InputDecoration(labelText: 'Perusahaan')),
+                TextField(
+                    controller: namaController,
+                    decoration: const InputDecoration(labelText: 'Nama Dosen')),
+                TextField(
+                    controller: nidkController,
+                    decoration: const InputDecoration(labelText: 'NIDK')),
+                TextField(
+                    controller: perusahaanController,
+                    decoration: const InputDecoration(labelText: 'Perusahaan')),
               ],
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Batal')),
             ElevatedButton(
               onPressed: () async {
                 setState(() => _isLoading = true);
@@ -78,7 +93,7 @@ class _TestApiPageState extends State<TestApiPage> {
                   await ApiService().postData<DosenPraktisi>(
                     DosenPraktisi.fromJson,
                     body,
-                    customEndpoint: "dosen-praktisi",
+                    "dosen-praktisi",
                   );
                   Navigator.pop(context);
                   _fetchDosenPraktisi();
@@ -96,7 +111,7 @@ class _TestApiPageState extends State<TestApiPage> {
     );
   }
 
-  void _updateDosenPraktisi(DosenPraktisi dosen) {
+  Future<void> _updateDosenPraktisi(DosenPraktisi dosen) async {
     final namaController = TextEditingController(text: dosen.namaDosen);
     final nidkController = TextEditingController(text: dosen.nidk);
     final perusahaanController = TextEditingController(text: dosen.perusahaan);
@@ -109,14 +124,22 @@ class _TestApiPageState extends State<TestApiPage> {
           content: SingleChildScrollView(
             child: Column(
               children: [
-                TextField(controller: namaController, decoration: const InputDecoration(labelText: 'Nama Dosen')),
-                TextField(controller: nidkController, decoration: const InputDecoration(labelText: 'NIDK')),
-                TextField(controller: perusahaanController, decoration: const InputDecoration(labelText: 'Perusahaan')),
+                TextField(
+                    controller: namaController,
+                    decoration: const InputDecoration(labelText: 'Nama Dosen')),
+                TextField(
+                    controller: nidkController,
+                    decoration: const InputDecoration(labelText: 'NIDK')),
+                TextField(
+                    controller: perusahaanController,
+                    decoration: const InputDecoration(labelText: 'Perusahaan')),
               ],
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Batal')),
             ElevatedButton(
               onPressed: () async {
                 setState(() => _isLoading = true);
@@ -137,7 +160,7 @@ class _TestApiPageState extends State<TestApiPage> {
                     DosenPraktisi.fromJson,
                     dosen.id,
                     body,
-                    customEndpoint: "dosen-praktisi",
+                    "dosen-praktisi",
                   );
                   Navigator.pop(context);
                   _fetchDosenPraktisi();
@@ -155,12 +178,12 @@ class _TestApiPageState extends State<TestApiPage> {
     );
   }
 
-  void _deleteDosenPraktisi(int id) async {
+  Future<void> _deleteDosenPraktisi(int id) async {
     setState(() => _isLoading = true);
     try {
       await ApiService().deleteData<DosenPraktisi>(
         id,
-        customEndpoint: "dosen-praktisi",
+        "dosen-praktisi",
       );
       _fetchDosenPraktisi();
     } catch (e) {
@@ -176,48 +199,51 @@ class _TestApiPageState extends State<TestApiPage> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _dosenList.isEmpty
-          ? const Center(child: Text('Tidak ada data'))
-          : ListView.builder(
-        itemCount: _dosenList.length,
-        itemBuilder: (context, index) {
-          final dosen = _dosenList[index];
-          return Card(
-            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            elevation: 2,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              title: Text(
-                dosen.namaDosen,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Perusahaan: ${dosen.perusahaan}"),
-                  Text("Bidang: ${dosen.bidangKeahlian}"),
-                ],
-              ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.blue),
-                    onPressed: () {
-                      setState(() => _selectedId = dosen.id);
-                      _updateDosenPraktisi(dosen);
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => _deleteDosenPraktisi(dosen.id),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+              ? const Center(child: Text('Tidak ada data'))
+              : ListView.builder(
+                  itemCount: _dosenList.length,
+                  itemBuilder: (context, index) {
+                    final dosen = _dosenList[index];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        title: Text(
+                          dosen.namaDosen,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Perusahaan: ${dosen.perusahaan}"),
+                            Text("Bidang: ${dosen.bidangKeahlian}"),
+                          ],
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit, color: Colors.blue),
+                              onPressed: () {
+                                setState(() => _selectedId = dosen.id);
+                                _updateDosenPraktisi(dosen);
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => _deleteDosenPraktisi(dosen.id),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addDosenPraktisi,
         child: const Icon(Icons.add),
