@@ -1,25 +1,26 @@
+import 'package:flutter_test/flutter_test.dart';
 import 'package:gkm_mobile/models/dosen_praktisi.dart';
 import 'package:gkm_mobile/services/api_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-void main() async {
-  // Mock SharedPreferences for testing
-  SharedPreferences.setMockInitialValues({}); // Mock empty SharedPreferences
-  var currentId = 0;
-
+void main() {
   final apiService = ApiService();
-  const String apiToken = "REPLACED"; // Replace with your actual token
+  const String apiToken = "REPLACED"; // Ganti dengan token asli
+  int currentId = 0;
 
-  // Save API token to shared preferences (if needed)
-  Future<void> saveApiToSharedPrefs() async {
+  setUpAll(() async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    print("=================================================================");
     print("Menyimpan API Token ...");
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('token', apiToken);
-    print("API Token disimpan\n\n");
-  }
+    await prefs.setString('token', apiToken);
+    print("API Token disimpan");
+    print(
+        "=================================================================\n\n");
+  });
 
-  // Fetch data
-  Future<void> fetchDosenPraktisi() async {
+  test('Ambil data Dosen Praktisi', () async {
+    print("=================================================================");
     print("Ambil data Dosen Praktisi ...");
     try {
       final data = await apiService.getData<DosenPraktisi>(
@@ -28,20 +29,22 @@ void main() async {
       );
       print("Data Dosen Praktisi berhasil diambil:");
       print("Jumlah data: ${data.length}");
-      print("Data Dosen Praktisi: ${data}");
+      print("Data Dosen Praktisi: $data");
       int i = 1;
       for (var dosen in data) {
-        print("ID ${i}: ${dosen})");
+        print("ID ${i}: ${dosen.toJson()})");
         i++;
       }
-      print("Data Dosen Praktisi berhasil diambil\n\n");
+      print("Data Dosen Praktisi berhasil diambil");
     } catch (e) {
       print("Error fetching data: $e");
     }
-  }
+    print(
+        "=================================================================\n\n");
+  });
 
-  // Add data
-  Future<void> addDosenPraktisi() async {
+  test('Tambah data Dosen Praktisi', () async {
+    print("=================================================================");
     print("Adding a new Dosen Praktisi...");
     final body = {
       "nama_dosen": "John Doe",
@@ -57,21 +60,47 @@ void main() async {
     };
 
     try {
-      var ret = await apiService.postData<DosenPraktisi>(
+      final ret = await apiService.postData<DosenPraktisi>(
         DosenPraktisi.fromJson,
         body,
         "dosen-praktisi",
       );
       currentId = ret.id;
-      print("Data berhasil ditambahkan dengan ID: ${ret.id}\n\n");
+      print("Data berhasil ditambahkan dengan ID: ${ret.id}");
     } catch (e) {
       print("Error adding data: $e");
     }
-  }
+    print(
+        "=================================================================\n\n");
+  });
 
-  // Update data
-  Future<void> updateDosenPraktisi(int id) async {
-    print("Updating Dosen Praktisi with ID $id...");
+  test('Ambil data Dosen Praktisi', () async {
+    print("=================================================================");
+    print("Ambil data Dosen Praktisi ...");
+    try {
+      final data = await apiService.getData<DosenPraktisi>(
+        DosenPraktisi.fromJson,
+        "dosen-praktisi",
+      );
+      print("Data Dosen Praktisi berhasil diambil:");
+      print("Jumlah data: ${data.length}");
+      print("Data Dosen Praktisi: $data");
+      int i = 1;
+      for (var dosen in data) {
+        print("ID ${i}: ${dosen.toJson()})");
+        i++;
+      }
+      print("Data Dosen Praktisi berhasil diambil");
+    } catch (e) {
+      print("Error fetching data: $e");
+    }
+    print(
+        "=================================================================\n\n");
+  });
+
+  test('Update data Dosen Praktisi', () async {
+    print("=================================================================");
+    print("Updating Dosen Praktisi with ID $currentId...");
     final body = {
       "nama_dosen": "Jane Doe",
       "nidk": "654321",
@@ -88,39 +117,79 @@ void main() async {
     try {
       await apiService.updateData<DosenPraktisi>(
         DosenPraktisi.fromJson,
-        id,
+        currentId,
         body,
         "dosen-praktisi",
       );
-      print("Data berhasil diupdate.\n\n");
+      print("Data berhasil diupdate.");
     } catch (e) {
       print("Error updating data: $e");
     }
-  }
+    print(
+        "=================================================================\n\n");
+  });
 
-  // Delete data
-  Future<void> deleteDosenPraktisi(int id) async {
-    print("Deleting Dosen Praktisi with ID $id...");
+  test('Ambil data Dosen Praktisi', () async {
+    print("=================================================================");
+    print("Ambil data Dosen Praktisi ...");
     try {
-      await apiService.deleteData<DosenPraktisi>(
-        id,
+      final data = await apiService.getData<DosenPraktisi>(
+        DosenPraktisi.fromJson,
         "dosen-praktisi",
       );
-      print("Data berhasil dihapus.\n\n");
+      print("Data Dosen Praktisi berhasil diambil:");
+      print("Jumlah data: ${data.length}");
+      print("Data Dosen Praktisi: $data");
+      int i = 1;
+      for (var dosen in data) {
+        print("ID ${i}: ${dosen.toJson()})");
+        i++;
+      }
+      print("Data Dosen Praktisi berhasil diambil");
+    } catch (e) {
+      print("Error fetching data: $e");
+    }
+    print(
+        "=================================================================\n\n");
+  });
+
+  test('Hapus data Dosen Praktisi', () async {
+    print("=================================================================");
+    print("Deleting Dosen Praktisi with ID $currentId...");
+    try {
+      await apiService.deleteData<DosenPraktisi>(
+        currentId,
+        "dosen-praktisi",
+      );
+      print("Data berhasil dihapus.");
     } catch (e) {
       print("Error deleting data: $e");
     }
-  }
+    print(
+        "=================================================================\n\n");
+  });
 
-  // Run tests
-  await saveApiToSharedPrefs(); // Simpan API token ke SharedPreferences
-  await fetchDosenPraktisi(); // Ambil data Dosen Praktisi
-  await addDosenPraktisi(); // Tambah data Dosen Praktisi dan simpan id
-  await fetchDosenPraktisi(); // Ambil data Dosen Praktisi lagi
-  await updateDosenPraktisi(
-      currentId); // Edit data Dosen Praktisi yang ditambahkan
-  await fetchDosenPraktisi(); // Ambil data Dosen Praktisi lagi
-  await deleteDosenPraktisi(
-      currentId); // Hapus data Dosen Praktisi yang ditambahkan
-  await fetchDosenPraktisi(); // Ambil data Dosen Praktisi lagi
+  test('Ambil data Dosen Praktisi', () async {
+    print("=================================================================");
+    print("Ambil data Dosen Praktisi ...");
+    try {
+      final data = await apiService.getData<DosenPraktisi>(
+        DosenPraktisi.fromJson,
+        "dosen-praktisi",
+      );
+      print("Data Dosen Praktisi berhasil diambil:");
+      print("Jumlah data: ${data.length}");
+      print("Data Dosen Praktisi: $data");
+      int i = 1;
+      for (var dosen in data) {
+        print("ID ${i}: ${dosen.toJson()})");
+        i++;
+      }
+      print("Data Dosen Praktisi berhasil diambil");
+    } catch (e) {
+      print("Error fetching data: $e");
+    }
+    print(
+        "=================================================================\n\n");
+  });
 }
